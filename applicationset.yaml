@@ -11,30 +11,20 @@ spec:
         namespace: mcp-test-dev
         repoURL: https://github.com/geek0ps/mcp-test-chart
         targetRevision: main
-        values:
-          environment: dev
-          replicaCount: 1
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 200m
-              memory: 256Mi
+        replicaCount: 1
+        cpuRequest: 100m
+        memoryRequest: 128Mi
+        cpuLimit: 200m
+        memoryLimit: 256Mi
       - env: prod
         namespace: mcp-test-prod
         repoURL: https://github.com/geek0ps/mcp-test-chart
         targetRevision: main
-        values:
-          environment: prod
-          replicaCount: 3
-          resources:
-            requests:
-              cpu: 200m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
+        replicaCount: 3
+        cpuRequest: 200m
+        memoryRequest: 256Mi
+        cpuLimit: 500m
+        memoryLimit: 512Mi
   template:
     metadata:
       name: 'mcp-test-{{env}}'
@@ -45,7 +35,16 @@ spec:
         repoURL: '{{repoURL}}'
         targetRevision: '{{targetRevision}}'
         helm:
-          values: '{{values}}'
+          values: |
+            environment: {{env}}
+            replicaCount: {{replicaCount}}
+            resources:
+              requests:
+                cpu: {{cpuRequest}}
+                memory: {{memoryRequest}}
+              limits:
+                cpu: {{cpuLimit}}
+                memory: {{memoryLimit}}
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{namespace}}'
