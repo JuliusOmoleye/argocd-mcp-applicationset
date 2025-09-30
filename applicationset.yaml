@@ -29,6 +29,7 @@ spec:
       project: default
       source:
         repoURL: https://github.com/geek0ps/mcp-test-chart
+        path: .
         targetRevision: main
         helm:
           parameters:
