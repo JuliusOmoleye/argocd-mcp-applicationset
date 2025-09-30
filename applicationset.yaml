@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: mcp-test-environments
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: dev
+        namespace: mcp-test-dev
+        repoURL: https://github.com/geek0ps/mcp-test-chart
+        targetRevision: main
+        values: |
+          environment: dev
+          replicaCount: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      - env: prod
+        namespace: mcp-test-prod
+        repoURL: https://github.com/geek0ps/mcp-test-chart
+        targetRevision: main
+        values: |
+          environment: prod
+          replicaCount: 3
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+  template:
+    metadata:
+      name: 'mcp-test-{{env}}'
+      namespace: argocd
+    spec:
+      project: default
+      source:
+        repoURL: '{{repoURL}}'
+        targetRevision: '{{targetRevision}}'
+        helm:
+          values: '{{values}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
